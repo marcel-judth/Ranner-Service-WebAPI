@@ -17,8 +17,8 @@ namespace Ranner_Service.Controllers
             Customer cust1 = new Customer(1, "Customer1", "Hauptstrasse 1", 9500, "Villach", "AT59 871979");
             Customer cust2 = new Customer(2, "Kunde", "Nebenstrasse 1", 9220, "Velden", "AT59 871979");
 
-            Address add1 = new Address(1, "Ranner-Service", "Villacherstrasse 73a", 9300, "St.Veit", "AT");
-            Address add2 = new Address(2, "Bautstelle", "Wiener-Strasse", 0100, "Wien", "AT");
+            Address add1 = new Address(1, "Ranner-Service", "Villacherstrasse 73a", "9300", "St.Veit", "AT");
+            Address add2 = new Address(2, "Bautstelle", "Wiener-Strasse", "0100", "Wien", "AT");
             // string orderNr, DateTime? orderDate, string invoiceNr, DateTime? invoiceDate, Customer customer, string referenceNumber, string freighterName, string freightersInvNumber, DateTime? freightersInvArrived, DateTime? freighterPaydOn,
             //    DateTime? customerPaidOn, DateTime shipDate, DateTime unshipDate, string product, Address pickupAddress, Address deliveryAddress, double amountFreighter, double amountCustomer
             Invoice invoice1 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Slemnik", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);

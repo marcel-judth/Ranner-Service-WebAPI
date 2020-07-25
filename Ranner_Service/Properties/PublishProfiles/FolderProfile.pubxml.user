@@ -4,7 +4,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <_PublishTargetUrl>C:\Users\judthmar\Documents\GitHub\Ranner-Service-Invoicing\Ranner_Service\Ranner_Service\bin\app.publish\</_PublishTargetUrl>
+    <_PublishTargetUrl>C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\app.publish\</_PublishTargetUrl>
   </PropertyGroup>
   <ItemGroup>
     <File Include="Areas/HelpPage/HelpPage.css">
@@ -86,10 +86,10 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
       <publishTime>04/22/2019 01:06:16</publishTime>
     </File>
     <File Include="bin/Ranner_Service.dll">
-      <publishTime>07/24/2020 16:35:38</publishTime>
+      <publishTime>07/25/2020 10:20:34</publishTime>
     </File>
     <File Include="bin/Ranner_Service.pdb">
-      <publishTime>07/24/2020 16:35:38</publishTime>
+      <publishTime>07/25/2020 10:20:34</publishTime>
     </File>
     <File Include="bin/roslyn/csc.exe">
       <publishTime>08/08/2018 05:38:48</publishTime>
@@ -362,7 +362,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
       <publishTime>07/24/2020 13:47:17</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>07/24/2020 16:35:39</publishTime>
+      <publishTime>07/25/2020 10:20:36</publishTime>
     </File>
   </ItemGroup>
 </Project>

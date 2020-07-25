@@ -1,4 +1,5 @@
-﻿using Ranner_Service.Models;
+﻿using Ranner_Service.DataAccess;
+using Ranner_Service.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Ranner_Service.Controllers
         // GET api/<controller>
         public List<Address> Get()
         {
-            return new List<Address>( new Address[] { new Address(1, "Ranner-Service", "Villacherstrasse 73a", 9300, "St.Veit", "AT"), new Address(2, "Bautstelle", "Wiener-Strasse", 0100, "Wien", "AT") });
+            return SqlDataAccess.GetAddresses();
         }
 
         // GET api/<controller>/5
