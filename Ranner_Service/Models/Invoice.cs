@@ -13,11 +13,11 @@ namespace Ranner_Service.Models
         [DataMember]
         public int invoiceId { get; set; }
         [DataMember]
-        public string orderNr { get; set; }
+        public int orderNr { get; set; }
         [DataMember]
         public DateTime? orderDate { get; set; }
         [DataMember]
-        public string invoiceNr { get; set; }
+        public int invoiceNr { get; set; }
         [DataMember]
         public DateTime? invoiceDate { get; set; }
         [DataMember]
@@ -31,19 +31,17 @@ namespace Ranner_Service.Models
         [DataMember]
         public DateTime? freightersInvArrived { get; set; }
         [DataMember]
-        public DateTime? freighterPaydOn { get; set; }
+        public DateTime? freighterPaidOn { get; set; }
         [DataMember]
         public DateTime? customerPaidOn { get; set; }
         [DataMember]
-        public DateTime shipDate { get; set; }
-        [DataMember]
-        public DateTime unshipDate { get; set; }
+        public DateTime? shipDate { get; set; }
         [DataMember]
         public string product { get; set; }
         [DataMember]
         public Address pickupAddress { get; set; }
         [DataMember]
-        public Address deliveryAddress { get; set; }
+        public List<Address> deliveryAddresses { get; set; }
         [DataMember]
         public double amountFreighter { get; set; }
         [DataMember]
@@ -51,10 +49,10 @@ namespace Ranner_Service.Models
         [DataMember]
         public double profit { get; set; }
 
-        public Invoice(string orderNr, DateTime? orderDate, string invoiceNr, DateTime? invoiceDate,
+        public Invoice(int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate,
             Customer customer, string referenceNumber, string freighterName, string freightersInvNumber,
-            DateTime? freightersInvArrived, DateTime? freighterPaydOn, DateTime? customerPaidOn, DateTime shipDate,
-            DateTime unshipDate, string product, Address pickupAddress, Address deliveryAddress, double amountFreighter, double amountCustomer)
+            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate,
+            string product, Address pickupAddress, List<Address> deliveryAddresses, double amountFreighter, double amountCustomer)
         {
             this.orderNr = orderNr;
             this.orderDate = orderDate;
@@ -65,13 +63,60 @@ namespace Ranner_Service.Models
             this.freighterName = freighterName;
             this.freightersInvNumber = freightersInvNumber;
             this.freightersInvArrived = freightersInvArrived;
-            this.freighterPaydOn = freighterPaydOn;
+            this.freighterPaidOn = freighterPaidOn;
             this.customerPaidOn = customerPaidOn;
             this.shipDate = shipDate;
-            this.unshipDate = unshipDate;
             this.product = product;
             this.pickupAddress = pickupAddress;
-            this.deliveryAddress = deliveryAddress;
+            this.deliveryAddresses = deliveryAddresses;
+            this.amountFreighter = amountFreighter;
+            this.amountCustomer = amountCustomer;
+            this.profit = amountCustomer - amountFreighter;
+        }
+        public Invoice(int invoiceId, int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate,
+            Customer customer, string referenceNumber, string freighterName, string freightersInvNumber,
+            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate,
+            string product, Address pickupAddress, List<Address> deliveryAddresses, double amountFreighter, double amountCustomer)
+        {
+            this.invoiceId = invoiceId;
+            this.orderNr = orderNr;
+            this.orderDate = orderDate;
+            this.invoiceNr = invoiceNr;
+            this.invoiceDate = invoiceDate;
+            this.customer = customer;
+            this.referenceNumber = referenceNumber;
+            this.freighterName = freighterName;
+            this.freightersInvNumber = freightersInvNumber;
+            this.freightersInvArrived = freightersInvArrived;
+            this.freighterPaidOn = freighterPaidOn;
+            this.customerPaidOn = customerPaidOn;
+            this.shipDate = shipDate;
+            this.product = product;
+            this.pickupAddress = pickupAddress;
+            this.deliveryAddresses = deliveryAddresses;
+            this.amountFreighter = amountFreighter;
+            this.amountCustomer = amountCustomer;
+            this.profit = amountCustomer - amountFreighter;
+        }
+
+        public Invoice(int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate, Customer customer, 
+            string referenceNumber, string freighterName, string freightersInvNumber, DateTime? freightersInvArrived, DateTime? freighterPaydOn, 
+            DateTime? customerPaidOn, DateTime? shipDate, string product, Address pickupAddress, double amountFreighter, double amountCustomer)
+        {
+            this.orderNr = orderNr;
+            this.orderDate = orderDate;
+            this.invoiceNr = invoiceNr;
+            this.invoiceDate = invoiceDate;
+            this.customer = customer;
+            this.referenceNumber = referenceNumber;
+            this.freighterName = freighterName;
+            this.freightersInvNumber = freightersInvNumber;
+            this.freightersInvArrived = freightersInvArrived;
+            this.freighterPaidOn = freighterPaydOn;
+            this.customerPaidOn = customerPaidOn;
+            this.shipDate = shipDate;
+            this.product = product;
+            this.pickupAddress = pickupAddress;
             this.amountFreighter = amountFreighter;
             this.amountCustomer = amountCustomer;
             this.profit = amountCustomer - amountFreighter;

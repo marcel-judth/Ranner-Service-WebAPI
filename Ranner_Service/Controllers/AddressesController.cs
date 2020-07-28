@@ -24,18 +24,21 @@ namespace Ranner_Service.Controllers
         }
 
         // POST api/<controller>
-        public void Post([FromBody] string value)
+        public void Post([FromBody] Address value)
         {
+            SqlDataAccess.InsertAddress(value);
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public void Put([FromBody] Address value)
         {
+            SqlDataAccess.UpdateAddress(value);
         }
 
         // DELETE api/<controller>/5
         public void Delete(int id)
         {
+            SqlDataAccess.DeleteAddressById(id);
         }
     }
 }

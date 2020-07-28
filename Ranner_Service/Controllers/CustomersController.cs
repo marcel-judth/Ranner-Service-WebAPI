@@ -1,4 +1,5 @@
-﻿using Ranner_Service.Models;
+﻿using Ranner_Service.DataAccess;
+using Ranner_Service.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,28 +14,25 @@ namespace Ranner_Service.Controllers
         // GET api/<controller>
         public List<Customer> Get()
         {
-            return new List<Customer>(new Customer[] { new Customer(1, "Customer1", "Hauptstrasse 1", 9500, "Villach", "AT59 871979"), new Customer(2, "Kunde", "Nebenstrasse 1", 9220, "Velden", "AT59 871979") });
-        }
-
-        // GET api/<controller>/5
-        public string Get(int id)
-        {
-            return "value";
+            return SqlDataAccess.GetCustomers();
         }
 
         // POST api/<controller>
-        public void Post([FromBody] string value)
+        public void Post([FromBody] Customer value)
         {
+            SqlDataAccess.InsertCustomer(value);
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public void Put([FromBody] Customer value)
         {
+            SqlDataAccess.UpdateCustomer(value);
         }
 
         // DELETE api/<controller>/5
         public void Delete(int id)
         {
+            SqlDataAccess.DeleteCustomerById(id);
         }
     }
 }

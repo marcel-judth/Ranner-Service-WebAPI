@@ -1,4 +1,8 @@
-﻿using Ranner_Service.Models;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using Ranner_Service.DataAccess;
+using Ranner_Service.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,39 +17,7 @@ namespace Ranner_Service.Controllers
         // GET api/<controller>
         public List<Invoice> Get()
         {
-            List<Invoice> result = new List<Invoice>();
-            Customer cust1 = new Customer(1, "Customer1", "Hauptstrasse 1", 9500, "Villach", "AT59 871979");
-            Customer cust2 = new Customer(2, "Kunde", "Nebenstrasse 1", 9220, "Velden", "AT59 871979");
-
-            Address add1 = new Address(1, "Ranner-Service", "Villacherstrasse 73a", "9300", "St.Veit", "AT");
-            Address add2 = new Address(2, "Bautstelle", "Wiener-Strasse", "0100", "Wien", "AT");
-            // string orderNr, DateTime? orderDate, string invoiceNr, DateTime? invoiceDate, Customer customer, string referenceNumber, string freighterName, string freightersInvNumber, DateTime? freightersInvArrived, DateTime? freighterPaydOn,
-            //    DateTime? customerPaidOn, DateTime shipDate, DateTime unshipDate, string product, Address pickupAddress, Address deliveryAddress, double amountFreighter, double amountCustomer
-            Invoice invoice1 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Slemnik", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice2 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice3 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice4 = new Invoice("2020303", DateTime.Now, "123", DateTime.Now, cust1, "12345", "Temmel", "1245", DateTime.Now, DateTime.Now, DateTime.Now, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice5 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice6 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice7 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice8 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice9 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice10 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-            Invoice invoice11 = new Invoice("2020303", DateTime.Now, null, null, cust1, "12345", "Temmel", null, null, null, null, DateTime.Now, DateTime.Now, "Ware", add1, add2, 200, 240);
-
-            result.Add(invoice1);
-            result.Add(invoice2);
-            result.Add(invoice3);
-            result.Add(invoice4);
-            result.Add(invoice5);
-            result.Add(invoice6);
-            result.Add(invoice7);
-            result.Add(invoice8);
-            result.Add(invoice9);
-            result.Add(invoice10);
-            result.Add(invoice11);
-
-            return result;
+            return SqlDataAccess.GetInvoices();
         }
 
         // GET api/<controller>/5
@@ -55,18 +27,91 @@ namespace Ranner_Service.Controllers
         }
 
         // POST api/<controller>
-        public void Post([FromBody] string value)
+        [HttpPost]
+        [ActionName("Complex")]
+        public void Post([FromBody] JObject jsonResult)
         {
+            int orderNr = (int)jsonResult["orderNr"];
+            DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
+            int invoiceNr = (int)jsonResult["invoiceNr"];
+            DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
+            JToken jsonCustomer = jsonResult["customer"];
+            int customerId = (int)jsonCustomer["id"];
+            string referenceNumber = (string)jsonResult["referenceNumber"];
+            string freighterName = (string)jsonResult["freighterName"];
+            string freightersInvNumber = (string)jsonResult["freightersInvNumber"];
+            DateTime? freightersInvArrived = (jsonResult["freightersInvArrived"] != null) ? (DateTime?)jsonResult["freightersInvArrived"] : null;
+            DateTime? freighterPaidOn = (jsonResult["freighterPaidOn"] != null) ? (DateTime?)jsonResult["freighterPaidOn"] : null;
+            DateTime? customerPaidOn = (jsonResult["customerPaidOn"] != null) ? (DateTime?)jsonResult["customerPaidOn"] : null;
+            DateTime? shipDate = (jsonResult["shipDate"] != null) ? (DateTime?)jsonResult["shipDate"] : null;
+            JToken jsonAddress = jsonResult["pickupAddress"];
+            int shipAddressId = (int)jsonAddress["id"];
+            JToken[] jsondeliveryAddresses = jsonResult["deliveryAddresses"].ToArray();
+            List<Address> deliveryAddresses = new List<Address>();
+            foreach (JToken jsonDelAddress in jsondeliveryAddresses)
+            {
+                int deliveryaddressId = (int)jsonDelAddress["id"];
+                DateTime? deliveryTime = (DateTime?)jsonDelAddress["deliveryTime"];
+                deliveryAddresses.Add(new Address(deliveryaddressId, null, null, null, null, null, deliveryTime));
+            }
+            
+            string product = (string)jsonResult["product"];
+            double amountFreighter = (double)jsonResult["amountFreighter"];
+            double amountCustomer = (double)jsonResult["amountCustomer"];
+
+
+            Invoice newInvoice = new Invoice(orderNr, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
+                freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),
+                deliveryAddresses, amountFreighter, amountCustomer);
+
+
+            SqlDataAccess.InsertInvoice(newInvoice);
         }
 
         // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
+        public void Put([FromBody] JObject jsonResult)
         {
+            int invoiceId = (int)jsonResult["invoiceId"];
+            int orderNr = (int)jsonResult["orderNr"];
+            DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
+            int invoiceNr = (int)jsonResult["invoiceNr"];
+            DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
+            JToken jsonCustomer = jsonResult["customer"];
+            int customerId = (int)jsonCustomer["id"];
+            string referenceNumber = (string)jsonResult["referenceNumber"];
+            string freighterName = (string)jsonResult["freighterName"];
+            string freightersInvNumber = (string)jsonResult["freightersInvNumber"];
+            DateTime? freightersInvArrived = (jsonResult["freightersInvArrived"] != null) ? (DateTime?)jsonResult["freightersInvArrived"] : null;
+            DateTime? freighterPaidOn = (jsonResult["freighterPaidOn"] != null) ? (DateTime?)jsonResult["freighterPaidOn"] : null;
+            DateTime? customerPaidOn = (jsonResult["customerPaidOn"] != null) ? (DateTime?)jsonResult["customerPaidOn"] : null;
+            DateTime? shipDate = (jsonResult["shipDate"] != null) ? (DateTime?)jsonResult["shipDate"] : null;
+            JToken jsonAddress = jsonResult["pickupAddress"];
+            int shipAddressId = (int)jsonAddress["id"];
+            JToken[] jsondeliveryAddresses = jsonResult["deliveryAddresses"].ToArray();
+            List<Address> deliveryAddresses = new List<Address>();
+            foreach (JToken jsonDelAddress in jsondeliveryAddresses)
+            {
+                int deliveryaddressId = (int)jsonDelAddress["id"];
+                DateTime? deliveryTime = (DateTime?)jsonDelAddress["deliveryTime"];
+                deliveryAddresses.Add(new Address(deliveryaddressId, null, null, null, null, null, deliveryTime));
+            }
+
+            string product = (string)jsonResult["product"];
+            double amountFreighter = (double)jsonResult["amountFreighter"];
+            double amountCustomer = (double)jsonResult["amountCustomer"];
+
+
+            Invoice invoice = new Invoice(invoiceId, orderNr, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
+                freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),
+                deliveryAddresses, amountFreighter, amountCustomer);
+
+            SqlDataAccess.UpdateInvoice(invoice);
         }
 
         // DELETE api/<controller>/5
         public void Delete(int id)
         {
+            SqlDataAccess.DeleteInvoice(id);
         }
     }
 }
