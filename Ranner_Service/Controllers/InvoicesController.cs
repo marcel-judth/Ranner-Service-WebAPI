@@ -64,7 +64,6 @@ namespace Ranner_Service.Controllers
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),
                 deliveryAddresses, amountFreighter, amountCustomer);
 
-
             SqlDataAccess.InsertInvoice(newInvoice);
         }
 
@@ -99,7 +98,6 @@ namespace Ranner_Service.Controllers
             string product = (string)jsonResult["product"];
             double amountFreighter = (double)jsonResult["amountFreighter"];
             double amountCustomer = (double)jsonResult["amountCustomer"];
-
 
             Invoice invoice = new Invoice(invoiceId, orderNr, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),

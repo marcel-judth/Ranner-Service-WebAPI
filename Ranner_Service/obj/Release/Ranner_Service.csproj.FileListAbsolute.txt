@@ -168,3 +168,5 @@ C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Rele
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.csproj.CopyComplete
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.dll
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.pdb
+C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\System.Data.SqlClient.dll
+C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\System.Data.SqlClient.xml
