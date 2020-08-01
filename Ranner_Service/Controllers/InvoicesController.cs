@@ -31,9 +31,7 @@ namespace Ranner_Service.Controllers
         [ActionName("Complex")]
         public void Post([FromBody] JObject jsonResult)
         {
-            int orderNr = (int)jsonResult["orderNr"];
             DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
-            int invoiceNr = (int)jsonResult["invoiceNr"];
             DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
             JToken jsonCustomer = jsonResult["customer"];
             int customerId = (int)jsonCustomer["id"];
@@ -58,11 +56,11 @@ namespace Ranner_Service.Controllers
             string product = (string)jsonResult["product"];
             double amountFreighter = (double)jsonResult["amountFreighter"];
             double amountCustomer = (double)jsonResult["amountCustomer"];
+            bool palletChange = (bool)jsonResult["palletChange"];
 
-
-            Invoice newInvoice = new Invoice(orderNr, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
+            Invoice newInvoice = new Invoice(0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),
-                deliveryAddresses, amountFreighter, amountCustomer);
+                deliveryAddresses, palletChange, amountFreighter, amountCustomer);
 
             SqlDataAccess.InsertInvoice(newInvoice);
         }
@@ -71,9 +69,7 @@ namespace Ranner_Service.Controllers
         public void Put([FromBody] JObject jsonResult)
         {
             int invoiceId = (int)jsonResult["invoiceId"];
-            int orderNr = (int)jsonResult["orderNr"];
             DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
-            int invoiceNr = (int)jsonResult["invoiceNr"];
             DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
             JToken jsonCustomer = jsonResult["customer"];
             int customerId = (int)jsonCustomer["id"];
@@ -98,10 +94,23 @@ namespace Ranner_Service.Controllers
             string product = (string)jsonResult["product"];
             double amountFreighter = (double)jsonResult["amountFreighter"];
             double amountCustomer = (double)jsonResult["amountCustomer"];
+            bool palletChange = (bool)jsonResult["palletChange"];
 
-            Invoice invoice = new Invoice(invoiceId, orderNr, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
+            JToken[] jsonPallets = jsonResult["pallets"].ToArray();
+            List<Pallet> pallets = new List<Pallet>();
+            foreach (JToken jTokenPallets in jsonPallets)
+            {
+                int palletId = (int)jTokenPallets["palletId"];
+                int amount = (int)jTokenPallets["amount"];
+                string type = jTokenPallets["type"].ToString();
+                string place = jTokenPallets["place"].ToString();
+
+                pallets.Add(new Pallet(palletId, amount, type, place));
+            }
+
+            Invoice invoice = new Invoice(invoiceId, 0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, new Address(shipAddressId, null, null, null, null, null),
-                deliveryAddresses, amountFreighter, amountCustomer);
+                deliveryAddresses, palletChange, amountFreighter, amountCustomer, pallets);
 
             SqlDataAccess.UpdateInvoice(invoice);
         }

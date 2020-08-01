@@ -52,8 +52,12 @@ namespace Ranner_Service.DataAccess
                         string product = reader.IsDBNull(reader.GetOrdinal("product")) ? null : reader.GetString(reader.GetOrdinal("product"));
                         double amountfreighter = reader.IsDBNull(reader.GetOrdinal("amountFreighter")) ? 0 : reader.GetDouble(reader.GetOrdinal("amountFreighter"));
                         double amountCustomer = reader.IsDBNull(reader.GetOrdinal("amountCustomer")) ? 0 : reader.GetDouble(reader.GetOrdinal("amountCustomer"));
+                        int palletChange = reader.IsDBNull(reader.GetOrdinal("palletChange")) ? 0 : reader.GetInt32(reader.GetOrdinal("palletChange"));
+                        List<Pallet> allPallets = new List<Pallet>();
+                        if (palletChange == 1)
+                            allPallets = SqlDataAccess.GetPalletsByInvId(invoiceId);
                         result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, freighterName, freighterInvNr, freightersInvArrived,
-                            freighterPaidOn, customerPaidOn, shipDate, product, shipAddress, deliveryAddresses, amountfreighter, amountCustomer));
+                            freighterPaidOn, customerPaidOn, shipDate, product, shipAddress, deliveryAddresses, (palletChange == 1), amountfreighter, amountCustomer, allPallets));
                     }
                 }
                 con.Close();
@@ -85,33 +89,87 @@ namespace Ranner_Service.DataAccess
             return result;
         }
 
+        private static int GetCurrentOrderNr()
+        {
+            int result = -1;
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                //
+                // Open the SqlConnection.
+                //
+                con.Open();
+                //
+                // This code uses an SqlCommand based on the SqlConnection.
+                //
+                using (SqlCommand command = new SqlCommand("SELECT Max(orderNr) from Invoices;", con))
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result = (int)reader.GetInt32(0);
+                    }
+                }
+                con.Close();
+            }
+            return result;
+        }
+
+        private static int GetCurrentInvoiceNr()
+        {
+            int result = -1;
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                //
+                // Open the SqlConnection.
+                //
+                con.Open();
+                //
+                // This code uses an SqlCommand based on the SqlConnection.
+                //
+                using (SqlCommand command = new SqlCommand("SELECT Max(invoiceNr) from Invoices; ", con))
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result = (int)reader.GetInt32(0);
+                    }
+                }
+                con.Close();
+            }
+            return result;
+        }
+
         public static void InsertInvoice(Invoice invoice)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "INSERT INTO Invoices(orderNr,orderDate, invoiceNr, invoiceDate, customerId, referenceNumber, freighterName, freighterInvNr, " +
-                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, pickupAddressId, product, amountFreighter, amountCustomer)" +
-                    " VALUES(@param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9, @param10, @param11, @param12, @param13, @param14, @param15, @param16)";
+                string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, freighterName, freighterInvNr, " +
+                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, pickupAddressId, product, amountFreighter, amountCustomer, palletChange)" +
+                    " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
+                    "@customerPaidOn, @shipDate, @pickupAddressId, @product, @amountFreighter, @amountCustomer, @palletChange)";
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@param1", (invoice.orderNr <= 0) ? DBNull.Value : (object)invoice.orderNr);
-                    cmd.Parameters.AddWithValue("@param2", ((object)invoice.orderDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param3", (invoice.invoiceNr <= 0) ? DBNull.Value : (object)invoice.invoiceNr);
-                    cmd.Parameters.AddWithValue("@param4", ((object)invoice.invoiceDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param5", ((object)invoice.customer.id) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param6", ((object)invoice.referenceNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param7", ((object)invoice.freighterName) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param8", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param9", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param10", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param11", ((object)invoice.customerPaidOn) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param12", ((object)invoice.shipDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param13", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param14", ((object)invoice.product) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param15", ((object)invoice.amountFreighter) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param16", ((object)invoice.amountCustomer) ?? DBNull.Value);
-
+                    cmd.Parameters.AddWithValue("@orderNr", (SqlDataAccess.GetCurrentOrderNr() + 1));
+                    cmd.Parameters.AddWithValue("@orderDate", ((object)invoice.orderDate) ?? DBNull.Value);
+                    //cmd.Parameters.AddWithValue("@invoiceNr", (invoice.invoiceNr <= 0) ? DBNull.Value : (object)invoice.invoiceNr);
+                    //cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freightersInvNumber", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freightersInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@pickupAddressId", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amountFreighter", ((object)invoice.amountFreighter) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amountCustomer", ((object)invoice.amountCustomer) ?? DBNull.Value);
+                    if (invoice.palletChange)
+                        cmd.Parameters.AddWithValue("@palletChange", 1);
+                    else
+                        cmd.Parameters.AddWithValue("@palletChange", 0);
                     cmd.ExecuteNonQuery();
                 }
                 int currentInvoiceId = SqlDataAccess.GetCurrentInvoiceId();
@@ -129,29 +187,40 @@ namespace Ranner_Service.DataAccess
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "UPDATE Invoices SET orderNr = @param1, orderDate = @param2, invoiceNr = @param3, invoiceDate = @param4, customerId = @param5, " +
-                    " referenceNumber = @param6, freighterName = @param7, freighterInvNr = @param8, freighterInvArrived = @param9, freighterPaidOn = @param10, customerPaidOn = @param11," +
-                    "shipDate = @param12, pickupAddressId = @param13, product = @param14, amountFreighter = @param15, amountCustomer = @param16 WHERE invoiceId = " + invoice.invoiceId;
+                string sql = "UPDATE Invoices SET orderDate = @orderDate, invoiceNr = @invoiceNr, invoiceDate = @invoiceDate, customerId = @customerId, " +
+                    " referenceNumber = @referenceNumber, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
+                    " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, pickupAddressId = @pickupAddressId, product = @product, " +
+                    "amountFreighter = @amountFreighter, amountCustomer = @amountCustomer, palletChange = @palletChange WHERE invoiceId = " + invoice.invoiceId;
 
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@param1", (invoice.orderNr <= 0) ? DBNull.Value : (object)invoice.orderNr);
-                    cmd.Parameters.AddWithValue("@param2", ((object)invoice.orderDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param3", (invoice.invoiceNr <= 0) ? DBNull.Value : (object)invoice.invoiceNr);
-                    cmd.Parameters.AddWithValue("@param4", ((object)invoice.invoiceDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param5", ((object)invoice.customer.id) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param6", ((object)invoice.referenceNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param7", ((object)invoice.freighterName) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param8", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param9", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param10", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param11", ((object)invoice.customerPaidOn) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param12", ((object)invoice.shipDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param13", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param14", ((object)invoice.product) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param15", ((object)invoice.amountFreighter) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@param16", ((object)invoice.amountCustomer) ?? DBNull.Value);
-
+                    cmd.Parameters.AddWithValue("@orderDate", ((object)invoice.orderDate) ?? DBNull.Value);
+                    if (invoice.invoiceNr > 0)
+                        cmd.Parameters.AddWithValue("@invoiceNr", SqlDataAccess.GetCurrentInvoiceNr() + 1);
+                    else
+                        cmd.Parameters.AddWithValue("@invoiceNr", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterInvNr", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@pickupAddressId", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amountFreighter", ((object)invoice.amountFreighter) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amountCustomer", ((object)invoice.amountCustomer) ?? DBNull.Value);
+                    if (invoice.palletChange)
+                    {
+                        cmd.Parameters.AddWithValue("@palletChange", 1);
+                        SqlDataAccess.DeletePalletsFromInvoice(invoice.invoiceId);
+                        foreach (Pallet pallet in invoice.pallets)
+                            SqlDataAccess.InsertPallet(pallet, invoice.invoiceId);
+                    }
+                    else
+                        cmd.Parameters.AddWithValue("@palletChange", 0);
                     cmd.ExecuteNonQuery();
                 }
 
@@ -177,7 +246,70 @@ namespace Ranner_Service.DataAccess
                 connection.Close();
             }
         }
+        #endregion
 
+        #region pallets
+        private static List<Pallet> GetPalletsByInvId(int invoiceId)
+        {
+            List<Pallet> result = new List<Pallet>();
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                //
+                // Open the SqlConnection.
+                //
+                con.Open();
+                //
+                // This code uses an SqlCommand based on the SqlConnection.
+                //
+                using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[pallets] WHERE [invoiceId] = " + invoiceId, con))
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int palletId = reader.IsDBNull(reader.GetOrdinal("palletId")) ? 0 : reader.GetInt32(reader.GetOrdinal("palletId"));
+                        int amount = reader.IsDBNull(reader.GetOrdinal("amount")) ? 0 : reader.GetInt32(reader.GetOrdinal("amount"));
+                        string type = reader.IsDBNull(reader.GetOrdinal("type")) ? null : reader.GetString(reader.GetOrdinal("type"));
+                        string place = reader.IsDBNull(reader.GetOrdinal("place")) ? null : reader.GetString(reader.GetOrdinal("place"));
+
+                        result.Add(new Pallet(palletId, amount, type, place));
+                    }
+                }
+                con.Close();
+            }
+            return result;
+        }
+        private static void InsertPallet(Pallet pallet, int invoiceId)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "INSERT INTO pallets(invoiceId, amount, type, place) VALUES(@invoiceId,@amount,@type,@place)";
+                using (SqlCommand cmd = new SqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@invoiceId", invoiceId);
+                    cmd.Parameters.AddWithValue("@amount", pallet.amount);
+                    cmd.Parameters.AddWithValue("@type", pallet.type);
+                    cmd.Parameters.AddWithValue("@place", pallet.place);
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+
+        private static void DeletePalletsFromInvoice(int invoiceId)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "DELETE FROM pallets WHERE invoiceId = " + invoiceId;
+                using (SqlCommand cmd = new SqlCommand(sql, connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
         #endregion
 
         #region deliverTo
