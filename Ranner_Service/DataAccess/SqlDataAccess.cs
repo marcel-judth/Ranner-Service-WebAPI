@@ -19,13 +19,7 @@ namespace Ranner_Service.DataAccess
             List<Invoice> result = new List<Invoice>();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Invoices]", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -40,42 +34,38 @@ namespace Ranner_Service.DataAccess
                         int customerId = reader.IsDBNull(reader.GetOrdinal("customerId")) ? 0 : reader.GetInt32(reader.GetOrdinal("customerId"));
                         Customer customer = SqlDataAccess.GetCustomerById(customerId);
                         string referenceNr = reader.IsDBNull(reader.GetOrdinal("referenceNumber")) ? null : reader.GetString(reader.GetOrdinal("referenceNumber"));
+                        string refNrCustomer = reader.IsDBNull(reader.GetOrdinal("refNrCustomer")) ? null : reader.GetString(reader.GetOrdinal("refNrCustomer"));
                         string freighterName = reader.IsDBNull(reader.GetOrdinal("freighterName")) ? null : reader.GetString(reader.GetOrdinal("freighterName"));
                         string freighterInvNr = reader.IsDBNull(reader.GetOrdinal("freighterInvNr")) ? null : reader.GetString(reader.GetOrdinal("freighterInvNr"));
                         DateTime? freightersInvArrived = reader.IsDBNull(reader.GetOrdinal("freighterInvArrived")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterInvArrived"));
                         DateTime? freighterPaidOn = reader.IsDBNull(reader.GetOrdinal("freighterPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterPaidOn"));
                         DateTime? customerPaidOn = reader.IsDBNull(reader.GetOrdinal("customerPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("customerPaidOn"));
                         DateTime? shipDate = reader.IsDBNull(reader.GetOrdinal("shipDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("shipDate"));
-                        int pickupAddressId = reader.IsDBNull(reader.GetOrdinal("pickupAddressId")) ? 0 : reader.GetInt32(reader.GetOrdinal("pickupAddressId"));
-                        Address shipAddress = SqlDataAccess.GetAddresseById(pickupAddressId);
+                        List<Address> pickupAddresses = SqlDataAccess.GetPickupAddressesByInvId(invoiceId);
                         List<Address> deliveryAddresses = SqlDataAccess.GetDeliveryAddressesByInvId(invoiceId);
                         string product = reader.IsDBNull(reader.GetOrdinal("product")) ? null : reader.GetString(reader.GetOrdinal("product"));
-                        double amountfreighter = reader.IsDBNull(reader.GetOrdinal("amountFreighter")) ? 0 : reader.GetDouble(reader.GetOrdinal("amountFreighter"));
-                        double amountCustomer = reader.IsDBNull(reader.GetOrdinal("amountCustomer")) ? 0 : reader.GetDouble(reader.GetOrdinal("amountCustomer"));
+                        double pricefreighter = reader.IsDBNull(reader.GetOrdinal("priceFreighter")) ? 0 : reader.GetDouble(reader.GetOrdinal("priceFreighter"));
+                        double priceCustomer = reader.IsDBNull(reader.GetOrdinal("priceCustomer")) ? 0 : reader.GetDouble(reader.GetOrdinal("priceCustomer"));
+                        int amount = reader.IsDBNull(reader.GetOrdinal("amount")) ? 0 : reader.GetInt32(reader.GetOrdinal("amount"));
                         int palletChange = reader.IsDBNull(reader.GetOrdinal("palletChange")) ? 0 : reader.GetInt32(reader.GetOrdinal("palletChange"));
                         List<Pallet> allPallets = new List<Pallet>();
                         if (palletChange == 1)
                             allPallets = SqlDataAccess.GetPalletsByInvId(invoiceId);
-                        result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, freighterName, freighterInvNr, freightersInvArrived,
-                            freighterPaidOn, customerPaidOn, shipDate, product, shipAddress, deliveryAddresses, (palletChange == 1), amountfreighter, amountCustomer, allPallets));
+                        result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, refNrCustomer, freighterName, freighterInvNr, freightersInvArrived,
+                            freighterPaidOn, customerPaidOn, shipDate, product, pickupAddresses, deliveryAddresses, (palletChange == 1), pricefreighter, priceCustomer, amount, allPallets));
                     }
                 }
                 con.Close();
             }
             return result;
         }
+
         private static int GetCurrentInvoiceId()
         {
             int result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT IDENT_CURRENT('Invoices'); ", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -94,13 +84,7 @@ namespace Ranner_Service.DataAccess
             int result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT Max(orderNr) from Invoices;", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -119,13 +103,7 @@ namespace Ranner_Service.DataAccess
             int result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT Max(invoiceNr) from Invoices; ", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -144,28 +122,28 @@ namespace Ranner_Service.DataAccess
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, freighterName, freighterInvNr, " +
-                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, pickupAddressId, product, amountFreighter, amountCustomer, palletChange)" +
-                    " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
-                    "@customerPaidOn, @shipDate, @pickupAddressId, @product, @amountFreighter, @amountCustomer, @palletChange)";
+                string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, refNrCustomer, freighterName, freighterInvNr, " +
+                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, priceFreighter, priceCustomer, amount, palletChange)" +
+                    " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @refNrCustomer, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
+                    "@customerPaidOn, @shipDate, @product, @priceFreighter, @priceCustomer, @amount, @palletChange)";
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
                     cmd.Parameters.AddWithValue("@orderNr", (SqlDataAccess.GetCurrentOrderNr() + 1));
                     cmd.Parameters.AddWithValue("@orderDate", ((object)invoice.orderDate) ?? DBNull.Value);
-                    //cmd.Parameters.AddWithValue("@invoiceNr", (invoice.invoiceNr <= 0) ? DBNull.Value : (object)invoice.invoiceNr);
-                    //cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@refNrCustomer", ((object)invoice.refNrCustomer) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freightersInvNumber", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freightersInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@pickupAddressId", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@amountFreighter", ((object)invoice.amountFreighter) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@amountCustomer", ((object)invoice.amountCustomer) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@priceFreighter", ((object)invoice.priceFreighter) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@priceCustomer", ((object)invoice.priceCustomer) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amount", ((object)invoice.amount) ?? DBNull.Value);
+
                     if (invoice.palletChange)
                         cmd.Parameters.AddWithValue("@palletChange", 1);
                     else
@@ -174,9 +152,13 @@ namespace Ranner_Service.DataAccess
                 }
                 int currentInvoiceId = SqlDataAccess.GetCurrentInvoiceId();
 
-                if(currentInvoiceId > -1)
-                    foreach(Address deliveryAddress in invoice.deliveryAddresses)
+                if (currentInvoiceId > -1)
+                {
+                    foreach (Address deliveryAddress in invoice.deliveryAddresses)
                         SqlDataAccess.InsertDeliverTo(currentInvoiceId, deliveryAddress.id, deliveryAddress.deliveryTime);
+                    foreach (Address pickupAddress in invoice.pickupAddresses)
+                        SqlDataAccess.InsertPickupFrom(currentInvoiceId, pickupAddress.id, pickupAddress.deliveryTime);
+                }
                     
                 connection.Close();
             }
@@ -188,9 +170,9 @@ namespace Ranner_Service.DataAccess
             {
                 connection.Open();
                 string sql = "UPDATE Invoices SET orderDate = @orderDate, invoiceNr = @invoiceNr, invoiceDate = @invoiceDate, customerId = @customerId, " +
-                    " referenceNumber = @referenceNumber, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
-                    " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, pickupAddressId = @pickupAddressId, product = @product, " +
-                    "amountFreighter = @amountFreighter, amountCustomer = @amountCustomer, palletChange = @palletChange WHERE invoiceId = " + invoice.invoiceId;
+                    " referenceNumber = @referenceNumber, refNrCustomer = @refNrCustomer, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
+                    " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, product = @product, " +
+                    "priceFreighter = @priceFreighter, priceCustomer = @priceCustomer, amount = @amount, palletChange = @palletChange WHERE invoiceId = " + invoice.invoiceId;
 
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
@@ -202,16 +184,17 @@ namespace Ranner_Service.DataAccess
                     cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@refNrCustomer", ((object)invoice.refNrCustomer) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterInvNr", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@pickupAddressId", ((object)invoice.pickupAddress.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@amountFreighter", ((object)invoice.amountFreighter) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@amountCustomer", ((object)invoice.amountCustomer) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@priceFreighter", ((object)invoice.priceFreighter) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@amount", ((object)invoice.amount) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@priceCustomer", ((object)invoice.priceCustomer) ?? DBNull.Value);
                     if (invoice.palletChange)
                     {
                         cmd.Parameters.AddWithValue("@palletChange", 1);
@@ -225,8 +208,12 @@ namespace Ranner_Service.DataAccess
                 }
 
                 SqlDataAccess.DeleteDeliverToFromInvoice(invoice.invoiceId);
+                SqlDataAccess.DeletePickupFromInvoice(invoice.invoiceId);
+                
                 foreach (Address deliveryAddress in invoice.deliveryAddresses)
                     SqlDataAccess.InsertDeliverTo(invoice.invoiceId, deliveryAddress.id, deliveryAddress.deliveryTime);
+                foreach (Address pickupAddress in invoice.pickupAddresses)
+                    SqlDataAccess.InsertPickupFrom(invoice.invoiceId, pickupAddress.id, pickupAddress.deliveryTime);
 
                 connection.Close();
             }
@@ -254,13 +241,7 @@ namespace Ranner_Service.DataAccess
             List<Pallet> result = new List<Pallet>();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[pallets] WHERE [invoiceId] = " + invoiceId, con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -345,19 +326,46 @@ namespace Ranner_Service.DataAccess
         }
         #endregion
 
+        #region pickupFrom
+        public static void InsertPickupFrom(int invoiceId, int addressId, DateTime? deliveryTime)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "INSERT INTO pickupFrom(invoiceId, pickupAddressId, deliveryTime) VALUES(@param1,@param2,@param3)";
+                using (SqlCommand cmd = new SqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@param1", invoiceId);
+                    cmd.Parameters.AddWithValue("@param2", addressId);
+                    cmd.Parameters.AddWithValue("@param3", deliveryTime);
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+        private static void DeletePickupFromInvoice(int invoiceId)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "DELETE FROM pickupFrom WHERE invoiceId = " + invoiceId;
+                using (SqlCommand cmd = new SqlCommand(sql, connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+        #endregion
+
         #region addresses
         public static List<Address> GetAddresses()
         {
             List<Address> result = new List<Address>();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Addresses]", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -376,13 +384,7 @@ namespace Ranner_Service.DataAccess
             List<Address> result = new List<Address>();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[deliverTo] WHERE [invoiceId] = " + invoiceId, con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -395,18 +397,32 @@ namespace Ranner_Service.DataAccess
             }
             return result;
         }
+
+        private static List<Address> GetPickupAddressesByInvId(int invoiceId)
+        {
+            List<Address> result = new List<Address>();
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                con.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[pickupFrom] WHERE [invoiceId] = " + invoiceId, con))
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(GetAddresseById(reader.GetInt32(1)));
+                    }
+                }
+                con.Close();
+            }
+            return result;
+        }
+
         private static Address GetAddresseById(int shipAddressId)
         {
             Address result = null;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Addresses] WHERE [addressID] = " + shipAddressId, con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -482,13 +498,7 @@ namespace Ranner_Service.DataAccess
             List<Customer> result = new List<Customer>();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Customers]", con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -507,13 +517,7 @@ namespace Ranner_Service.DataAccess
             Customer result = null;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                //
-                // Open the SqlConnection.
-                //
                 con.Open();
-                //
-                // This code uses an SqlCommand based on the SqlConnection.
-                //
                 using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Customers] WHERE [customerID] = " + customerId, con))
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
