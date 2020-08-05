@@ -163,10 +163,10 @@ C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\Syst
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\System.Web.WebPages.Razor.xml
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\Antlr3.Runtime.pdb
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.csprojAssemblyReference.cache
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.csproj.CoreCompileInputs.cache
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.csproj.CopyComplete
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.dll
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.pdb
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\System.Data.SqlClient.dll
 C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\bin\System.Data.SqlClient.xml
+C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service\obj\Release\Ranner_Service.csprojAssemblyReference.cache

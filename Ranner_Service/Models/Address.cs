@@ -22,8 +22,10 @@ namespace Ranner_Service.Models
         public string city { get; set; }
         [DataMember]
         public string country { get; set; }
+        [DataMember]
         public DateTime? deliveryTime { get; set; }
 
+        [Newtonsoft.Json.JsonConstructor]
         public Address(int id, string name, string address, string zipCode, string place, string country, DateTime? deliveryTime)
         {
             this.id = id;

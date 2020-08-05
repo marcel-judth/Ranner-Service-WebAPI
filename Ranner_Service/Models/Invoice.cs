@@ -39,6 +39,8 @@ namespace Ranner_Service.Models
         [DataMember]
         public DateTime? shipDate { get; set; }
         [DataMember]
+        public DateTime? deliveryDate { get; set; }
+        [DataMember]
         public string product { get; set; }
         [DataMember]
         public List<Address> pickupAddresses { get; set; }
@@ -57,11 +59,14 @@ namespace Ranner_Service.Models
         [DataMember]
         public List<Pallet> pallets { get; set; }
 
+        [DataMember]
+        public string note { get; set; }
+
 
         public Invoice(int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate,
             Customer customer, string referenceNumber, string refNrCustomer, string freighterName, string freightersInvNumber,
-            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate,
-            string product, List<Address> pickupAddresses, List<Address> deliveryAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount)
+            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate, DateTime? deliveryDate,
+            string product, List<Address> pickupAddresses, List<Address> deliveryAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount, string note)
         {
             this.orderNr = orderNr;
             this.orderDate = orderDate;
@@ -76,6 +81,7 @@ namespace Ranner_Service.Models
             this.freighterPaidOn = freighterPaidOn;
             this.customerPaidOn = customerPaidOn;
             this.shipDate = shipDate;
+            this.deliveryDate = deliveryDate;
             this.product = product;
             this.pickupAddresses = pickupAddresses;
             this.deliveryAddresses = deliveryAddresses;
@@ -85,11 +91,12 @@ namespace Ranner_Service.Models
             this.palletChange = palletChange;
             this.amount = amount;
             this.pallets = new List<Pallet>();
+            this.note = note;
         }
         public Invoice(int invoiceId, int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate,
             Customer customer, string referenceNumber, string refNrCustomer, string freighterName, string freightersInvNumber,
-            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate,
-            string product, List<Address> pickupAddress, List<Address> deliveryAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount, List<Pallet> pallets)
+            DateTime? freightersInvArrived, DateTime? freighterPaidOn, DateTime? customerPaidOn, DateTime? shipDate, DateTime? deliveryDate,
+            string product, List<Address> pickupAddress, List<Address> deliveryAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount, List<Pallet> pallets, string note)
         {
             this.invoiceId = invoiceId;
             this.orderNr = orderNr;
@@ -105,6 +112,7 @@ namespace Ranner_Service.Models
             this.freighterPaidOn = freighterPaidOn;
             this.customerPaidOn = customerPaidOn;
             this.shipDate = shipDate;
+            this.deliveryDate = deliveryDate;
             this.product = product;
             this.pickupAddresses = pickupAddress;
             this.deliveryAddresses = deliveryAddresses;
@@ -114,11 +122,12 @@ namespace Ranner_Service.Models
             this.palletChange = palletChange;
             this.pallets = pallets;
             this.amount = amount;
+            this.note = note;
         }
 
         public Invoice(int orderNr, DateTime? orderDate, int invoiceNr, DateTime? invoiceDate, Customer customer, 
             string referenceNumber, string refNrCustomer, string freighterName, string freightersInvNumber, DateTime? freightersInvArrived, DateTime? freighterPaydOn, 
-            DateTime? customerPaidOn, DateTime? shipDate, string product, List<Address> pickupAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount)
+            DateTime? customerPaidOn, DateTime? shipDate, DateTime? deliveryDate, string product, List<Address> pickupAddresses, bool palletChange, double priceFreighter, double priceCustomer, int? amount, string note)
         {
             this.orderNr = orderNr;
             this.orderDate = orderDate;
@@ -133,6 +142,7 @@ namespace Ranner_Service.Models
             this.freighterPaidOn = freighterPaydOn;
             this.customerPaidOn = customerPaidOn;
             this.shipDate = shipDate;
+            this.deliveryDate = deliveryDate;
             this.product = product;
             this.pickupAddresses = pickupAddresses;
             this.priceFreighter = priceFreighter;
@@ -141,6 +151,7 @@ namespace Ranner_Service.Models
             this.palletChange = palletChange;
             this.pallets = new List<Pallet>();
             this.amount = amount;
+            this.note = note;
         }
 
         public void addPallet(Pallet newPallet)

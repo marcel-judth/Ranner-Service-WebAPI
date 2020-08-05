@@ -41,6 +41,7 @@ namespace Ranner_Service.DataAccess
                         DateTime? freighterPaidOn = reader.IsDBNull(reader.GetOrdinal("freighterPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterPaidOn"));
                         DateTime? customerPaidOn = reader.IsDBNull(reader.GetOrdinal("customerPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("customerPaidOn"));
                         DateTime? shipDate = reader.IsDBNull(reader.GetOrdinal("shipDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("shipDate"));
+                        DateTime? deliveryDate = reader.IsDBNull(reader.GetOrdinal("deliveryDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("deliveryDate"));
                         List<Address> pickupAddresses = SqlDataAccess.GetPickupAddressesByInvId(invoiceId);
                         List<Address> deliveryAddresses = SqlDataAccess.GetDeliveryAddressesByInvId(invoiceId);
                         string product = reader.IsDBNull(reader.GetOrdinal("product")) ? null : reader.GetString(reader.GetOrdinal("product"));
@@ -48,11 +49,13 @@ namespace Ranner_Service.DataAccess
                         double priceCustomer = reader.IsDBNull(reader.GetOrdinal("priceCustomer")) ? 0 : reader.GetDouble(reader.GetOrdinal("priceCustomer"));
                         int amount = reader.IsDBNull(reader.GetOrdinal("amount")) ? 0 : reader.GetInt32(reader.GetOrdinal("amount"));
                         int palletChange = reader.IsDBNull(reader.GetOrdinal("palletChange")) ? 0 : reader.GetInt32(reader.GetOrdinal("palletChange"));
+                        string note = reader.IsDBNull(reader.GetOrdinal("note")) ? null : reader.GetString(reader.GetOrdinal("note"));
+
                         List<Pallet> allPallets = new List<Pallet>();
                         if (palletChange == 1)
                             allPallets = SqlDataAccess.GetPalletsByInvId(invoiceId);
                         result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, refNrCustomer, freighterName, freighterInvNr, freightersInvArrived,
-                            freighterPaidOn, customerPaidOn, shipDate, product, pickupAddresses, deliveryAddresses, (palletChange == 1), pricefreighter, priceCustomer, amount, allPallets));
+                            freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses, deliveryAddresses, (palletChange == 1), pricefreighter, priceCustomer, amount, allPallets, note));
                     }
                 }
                 con.Close();
@@ -123,9 +126,9 @@ namespace Ranner_Service.DataAccess
             {
                 connection.Open();
                 string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, refNrCustomer, freighterName, freighterInvNr, " +
-                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, product, priceFreighter, priceCustomer, amount, palletChange)" +
+                    "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, priceFreighter, priceCustomer, amount, palletChange, note)" +
                     " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @refNrCustomer, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
-                    "@customerPaidOn, @shipDate, @product, @priceFreighter, @priceCustomer, @amount, @palletChange)";
+                    "@customerPaidOn, @shipDate, @deliveryDate, @product, @priceFreighter, @priceCustomer, @amount, @palletChange, @note)";
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
                     cmd.Parameters.AddWithValue("@orderNr", (SqlDataAccess.GetCurrentOrderNr() + 1));
@@ -139,10 +142,12 @@ namespace Ranner_Service.DataAccess
                     cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@deliveryDate", ((object)invoice.deliveryDate) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@priceFreighter", ((object)invoice.priceFreighter) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@priceCustomer", ((object)invoice.priceCustomer) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@amount", ((object)invoice.amount) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@note", ((object)invoice.note) ?? DBNull.Value);
 
                     if (invoice.palletChange)
                         cmd.Parameters.AddWithValue("@palletChange", 1);
@@ -171,8 +176,8 @@ namespace Ranner_Service.DataAccess
                 connection.Open();
                 string sql = "UPDATE Invoices SET orderDate = @orderDate, invoiceNr = @invoiceNr, invoiceDate = @invoiceDate, customerId = @customerId, " +
                     " referenceNumber = @referenceNumber, refNrCustomer = @refNrCustomer, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
-                    " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, product = @product, " +
-                    "priceFreighter = @priceFreighter, priceCustomer = @priceCustomer, amount = @amount, palletChange = @palletChange WHERE invoiceId = " + invoice.invoiceId;
+                    " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, deliveryDate = @deliveryDate, product = @product, " +
+                    "priceFreighter = @priceFreighter, priceCustomer = @priceCustomer, amount = @amount, palletChange = @palletChange, note = @note WHERE invoiceId = " + invoice.invoiceId;
 
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
@@ -191,10 +196,13 @@ namespace Ranner_Service.DataAccess
                     cmd.Parameters.AddWithValue("@freighterPaidOn", ((object)invoice.freighterPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerPaidOn", ((object)invoice.customerPaidOn) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@shipDate", ((object)invoice.shipDate) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@deliveryDate", ((object)invoice.deliveryDate) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@product", ((object)invoice.product) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@priceFreighter", ((object)invoice.priceFreighter) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@amount", ((object)invoice.amount) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@priceCustomer", ((object)invoice.priceCustomer) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@note", ((object)invoice.note) ?? DBNull.Value);
+
                     if (invoice.palletChange)
                     {
                         cmd.Parameters.AddWithValue("@palletChange", 1);
@@ -299,12 +307,12 @@ namespace Ranner_Service.DataAccess
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "INSERT INTO deliverTo(invoiceId, deliveryAddressId, deliveryTime) VALUES(@param1,@param2,@param3)";
+                string sql = "INSERT INTO deliverTo(invoiceId, deliveryAddressId, deliveryTime) VALUES(@param1, @param2, @param3)";
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
                     cmd.Parameters.AddWithValue("@param1", invoiceId);
                     cmd.Parameters.AddWithValue("@param2", addressId);
-                    cmd.Parameters.AddWithValue("@param3", deliveryTime);
+                    cmd.Parameters.AddWithValue("@param3", (deliveryTime == null) ? DBNull.Value : (object)deliveryTime.Value);
                     cmd.ExecuteNonQuery();
                 }
                 connection.Close();
@@ -337,7 +345,7 @@ namespace Ranner_Service.DataAccess
                 {
                     cmd.Parameters.AddWithValue("@param1", invoiceId);
                     cmd.Parameters.AddWithValue("@param2", addressId);
-                    cmd.Parameters.AddWithValue("@param3", deliveryTime);
+                    cmd.Parameters.AddWithValue("@param3", (deliveryTime == null) ? DBNull.Value : (object)deliveryTime.Value);
                     cmd.ExecuteNonQuery();
                 }
                 connection.Close();

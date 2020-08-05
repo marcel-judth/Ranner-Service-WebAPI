@@ -18,6 +18,7 @@ namespace Ranner_Service.Models
         [DataMember]
         public string place { get; set; }
 
+        [Newtonsoft.Json.JsonConstructor]
         public Pallet(int palletId, int amount, string type, string place)
         {
             this.palletId = palletId;
