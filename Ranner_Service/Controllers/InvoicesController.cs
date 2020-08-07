@@ -36,7 +36,6 @@ namespace Ranner_Service.Controllers
             JToken jsonCustomer = jsonResult["customer"];
             int customerId = (int)jsonCustomer["id"];
             string referenceNumber = (string)jsonResult["referenceNumber"];
-            string refNrCustomer = (string)jsonResult["refNrCustomer"];
             string freighterName = (string)jsonResult["freighterName"];
             string freightersInvNumber = (string)jsonResult["freightersInvNumber"];
             DateTime? freightersInvArrived = (jsonResult["freightersInvArrived"] != null) ? (DateTime?)jsonResult["freightersInvArrived"] : null;
@@ -68,7 +67,7 @@ namespace Ranner_Service.Controllers
             bool palletChange = (bool)jsonResult["palletChange"];
             string note = (string)jsonResult["note"];
 
-            Invoice newInvoice = new Invoice(0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber, refNrCustomer,
+            Invoice newInvoice = new Invoice(0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses,
                 deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, note);
 
@@ -81,10 +80,10 @@ namespace Ranner_Service.Controllers
             int invoiceId = (int)jsonResult["invoiceId"];
             DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
             DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
+            int? invoiceNr = jsonResult["invoiceNr"] != null ? (int?)jsonResult["invoiceNr"] : null;
             JToken jsonCustomer = jsonResult["customer"];
             int customerId = (int)jsonCustomer["id"];
             string referenceNumber = (string)jsonResult["referenceNumber"];
-            string refNrCustomer = (string)jsonResult["refNrCustomer"];
             string freighterName = (string)jsonResult["freighterName"];
             string freightersInvNumber = (string)jsonResult["freightersInvNumber"];
             DateTime? freightersInvArrived = (jsonResult["freightersInvArrived"] != null) ? (DateTime?)jsonResult["freightersInvArrived"] : null;
@@ -129,7 +128,7 @@ namespace Ranner_Service.Controllers
                 pallets.Add(new Pallet(palletId, pamount, type, place));
             }
 
-            Invoice invoice = new Invoice(invoiceId, 0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber, refNrCustomer,
+            Invoice invoice = new Invoice(invoiceId, 0, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses,
                 deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, pallets, note);
 

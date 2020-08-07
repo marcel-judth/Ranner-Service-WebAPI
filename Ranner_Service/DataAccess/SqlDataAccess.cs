@@ -29,12 +29,11 @@ namespace Ranner_Service.DataAccess
                         int invoiceId = reader.IsDBNull(reader.GetOrdinal("invoiceId")) ? 0 : reader.GetInt32(reader.GetOrdinal("invoiceId"));
                         int orderNr = reader.IsDBNull(reader.GetOrdinal("orderNr")) ? 0 : reader.GetInt32(reader.GetOrdinal("orderNr"));
                         DateTime? orderdate = reader.IsDBNull(reader.GetOrdinal("orderDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("orderDate"));
-                        int invoiceNr = reader.IsDBNull(reader.GetOrdinal("invoiceNr")) ? 0 : reader.GetInt32(reader.GetOrdinal("invoiceNr"));
+                        int? invoiceNr = reader.IsDBNull(reader.GetOrdinal("invoiceNr")) ? null : (int?)reader.GetInt32(reader.GetOrdinal("invoiceNr"));
                         DateTime? invoicedate = reader.IsDBNull(reader.GetOrdinal("invoiceDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("invoiceDate"));
                         int customerId = reader.IsDBNull(reader.GetOrdinal("customerId")) ? 0 : reader.GetInt32(reader.GetOrdinal("customerId"));
                         Customer customer = SqlDataAccess.GetCustomerById(customerId);
                         string referenceNr = reader.IsDBNull(reader.GetOrdinal("referenceNumber")) ? null : reader.GetString(reader.GetOrdinal("referenceNumber"));
-                        string refNrCustomer = reader.IsDBNull(reader.GetOrdinal("refNrCustomer")) ? null : reader.GetString(reader.GetOrdinal("refNrCustomer"));
                         string freighterName = reader.IsDBNull(reader.GetOrdinal("freighterName")) ? null : reader.GetString(reader.GetOrdinal("freighterName"));
                         string freighterInvNr = reader.IsDBNull(reader.GetOrdinal("freighterInvNr")) ? null : reader.GetString(reader.GetOrdinal("freighterInvNr"));
                         DateTime? freightersInvArrived = reader.IsDBNull(reader.GetOrdinal("freighterInvArrived")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterInvArrived"));
@@ -54,7 +53,7 @@ namespace Ranner_Service.DataAccess
                         List<Pallet> allPallets = new List<Pallet>();
                         if (palletChange == 1)
                             allPallets = SqlDataAccess.GetPalletsByInvId(invoiceId);
-                        result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, refNrCustomer, freighterName, freighterInvNr, freightersInvArrived,
+                        result.Add(new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, freighterName, freighterInvNr, freightersInvArrived,
                             freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses, deliveryAddresses, (palletChange == 1), pricefreighter, priceCustomer, amount, allPallets, note));
                     }
                 }
@@ -63,9 +62,9 @@ namespace Ranner_Service.DataAccess
             return result;
         }
 
-        private static int GetCurrentInvoiceId()
+        private static int? GetCurrentInvoiceId()
         {
-            int result = -1;
+            int? result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
@@ -74,7 +73,7 @@ namespace Ranner_Service.DataAccess
                 {
                     while (reader.Read())
                     {
-                        result = (int)reader.GetDecimal(0);
+                        result = reader.IsDBNull(0) ? null : (int?)reader.GetDecimal(0);
                     }
                 }
                 con.Close();
@@ -82,9 +81,9 @@ namespace Ranner_Service.DataAccess
             return result;
         }
 
-        private static int GetCurrentOrderNr()
+        private static int? GetCurrentOrderNr()
         {
-            int result = -1;
+            int? result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
@@ -93,7 +92,7 @@ namespace Ranner_Service.DataAccess
                 {
                     while (reader.Read())
                     {
-                        result = (int)reader.GetInt32(0);
+                        result = reader.IsDBNull(0) ? null : (int?)reader.GetInt32(0);
                     }
                 }
                 con.Close();
@@ -101,9 +100,10 @@ namespace Ranner_Service.DataAccess
             return result;
         }
 
-        private static int GetCurrentInvoiceNr()
+        private static int? GetCurrentInvoiceNr()
         {
-            int result = -1;
+            //check null and so on
+            int? result = -1;
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
@@ -112,7 +112,7 @@ namespace Ranner_Service.DataAccess
                 {
                     while (reader.Read())
                     {
-                        result = (int)reader.GetInt32(0);
+                        result = reader.IsDBNull(0) ? null : (int?)reader.GetInt32(0);
                     }
                 }
                 con.Close();
@@ -125,17 +125,17 @@ namespace Ranner_Service.DataAccess
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, refNrCustomer, freighterName, freighterInvNr, " +
+                string sql = "INSERT INTO Invoices(orderNr, orderDate, customerId, referenceNumber, freighterName, freighterInvNr, " +
                     "freighterInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, priceFreighter, priceCustomer, amount, palletChange, note)" +
-                    " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @refNrCustomer, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
+                    " VALUES(@orderNr, @orderDate, @customerId, @referenceNumber, @freighterName, @freightersInvNumber, @freightersInvArrived, @freighterPaidOn, " +
                     "@customerPaidOn, @shipDate, @deliveryDate, @product, @priceFreighter, @priceCustomer, @amount, @palletChange, @note)";
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@orderNr", (SqlDataAccess.GetCurrentOrderNr() + 1));
+                    int? ordernr = SqlDataAccess.GetCurrentOrderNr();
+                    cmd.Parameters.AddWithValue("@orderNr", (ordernr != null ? ordernr.Value + 1 : 1));
                     cmd.Parameters.AddWithValue("@orderDate", ((object)invoice.orderDate) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@refNrCustomer", ((object)invoice.refNrCustomer) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freightersInvNumber", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freightersInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
@@ -155,14 +155,14 @@ namespace Ranner_Service.DataAccess
                         cmd.Parameters.AddWithValue("@palletChange", 0);
                     cmd.ExecuteNonQuery();
                 }
-                int currentInvoiceId = SqlDataAccess.GetCurrentInvoiceId();
+                int? currentInvoiceId = SqlDataAccess.GetCurrentInvoiceId();
 
-                if (currentInvoiceId > -1)
+                if (currentInvoiceId != null)
                 {
                     foreach (Address deliveryAddress in invoice.deliveryAddresses)
-                        SqlDataAccess.InsertDeliverTo(currentInvoiceId, deliveryAddress.id, deliveryAddress.deliveryTime);
+                        SqlDataAccess.InsertDeliverTo(currentInvoiceId.Value, deliveryAddress.id, deliveryAddress.deliveryTime);
                     foreach (Address pickupAddress in invoice.pickupAddresses)
-                        SqlDataAccess.InsertPickupFrom(currentInvoiceId, pickupAddress.id, pickupAddress.deliveryTime);
+                        SqlDataAccess.InsertPickupFrom(currentInvoiceId.Value, pickupAddress.id, pickupAddress.deliveryTime);
                 }
                     
                 connection.Close();
@@ -175,21 +175,24 @@ namespace Ranner_Service.DataAccess
             {
                 connection.Open();
                 string sql = "UPDATE Invoices SET orderDate = @orderDate, invoiceNr = @invoiceNr, invoiceDate = @invoiceDate, customerId = @customerId, " +
-                    " referenceNumber = @referenceNumber, refNrCustomer = @refNrCustomer, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
+                    " referenceNumber = @referenceNumber, freighterName = @freighterName, freighterInvNr = @freighterInvNr, freighterInvArrived = @freighterInvArrived," +
                     " freighterPaidOn = @freighterPaidOn, customerPaidOn = @customerPaidOn, shipDate = @shipDate, deliveryDate = @deliveryDate, product = @product, " +
                     "priceFreighter = @priceFreighter, priceCustomer = @priceCustomer, amount = @amount, palletChange = @palletChange, note = @note WHERE invoiceId = " + invoice.invoiceId;
 
                 using (SqlCommand cmd = new SqlCommand(sql, connection))
                 {
                     cmd.Parameters.AddWithValue("@orderDate", ((object)invoice.orderDate) ?? DBNull.Value);
-                    if (invoice.invoiceNr > 0)
-                        cmd.Parameters.AddWithValue("@invoiceNr", SqlDataAccess.GetCurrentInvoiceNr() + 1);
-                    else
-                        cmd.Parameters.AddWithValue("@invoiceNr", DBNull.Value);
-                    cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
+                    if (invoice.invoiceDate != null && invoice.invoiceNr < 1){
+                        int? invNr = SqlDataAccess.GetCurrentInvoiceNr();
+                        cmd.Parameters.AddWithValue("@invoiceNr", (invNr == null) ? 1 : invNr + 1);
+                        cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
+                    }
+                    else {
+                        cmd.Parameters.AddWithValue("@invoiceNr", ((object)invoice.invoiceNr) ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@invoiceDate", ((object)invoice.invoiceDate) ?? DBNull.Value);
+                    }
                     cmd.Parameters.AddWithValue("@customerId", ((object)invoice.customer.id) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@referenceNumber", ((object)invoice.referenceNumber) ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@refNrCustomer", ((object)invoice.refNrCustomer) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterName", ((object)invoice.freighterName) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterInvNr", ((object)invoice.freightersInvNumber) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@freighterInvArrived", ((object)invoice.freightersInvArrived) ?? DBNull.Value);
