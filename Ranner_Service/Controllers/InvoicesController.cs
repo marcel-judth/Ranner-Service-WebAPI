@@ -21,9 +21,9 @@ namespace Ranner_Service.Controllers
         }
 
         // GET api/<controller>/5
-        public string Get(int id)
+        public Invoice Get(int id)
         {
-            return "value";
+            return SqlDataAccess.GetInvoiceById(id);
         }
 
         // POST api/<controller>

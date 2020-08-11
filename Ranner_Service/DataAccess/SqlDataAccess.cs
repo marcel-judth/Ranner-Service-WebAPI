@@ -62,6 +62,54 @@ namespace Ranner_Service.DataAccess
             return result;
         }
 
+        public static Invoice GetInvoiceById(int id)
+        {
+            Invoice result = null;
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                con.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM [dbo].[Invoices] where invoiceId = " + id, con))
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        //always check if the value is null -> otherwise it raises an exception
+                        int invoiceId = reader.IsDBNull(reader.GetOrdinal("invoiceId")) ? 0 : reader.GetInt32(reader.GetOrdinal("invoiceId"));
+                        int orderNr = reader.IsDBNull(reader.GetOrdinal("orderNr")) ? 0 : reader.GetInt32(reader.GetOrdinal("orderNr"));
+                        DateTime? orderdate = reader.IsDBNull(reader.GetOrdinal("orderDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("orderDate"));
+                        int? invoiceNr = reader.IsDBNull(reader.GetOrdinal("invoiceNr")) ? null : (int?)reader.GetInt32(reader.GetOrdinal("invoiceNr"));
+                        DateTime? invoicedate = reader.IsDBNull(reader.GetOrdinal("invoiceDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("invoiceDate"));
+                        int customerId = reader.IsDBNull(reader.GetOrdinal("customerId")) ? 0 : reader.GetInt32(reader.GetOrdinal("customerId"));
+                        Customer customer = SqlDataAccess.GetCustomerById(customerId);
+                        string referenceNr = reader.IsDBNull(reader.GetOrdinal("referenceNumber")) ? null : reader.GetString(reader.GetOrdinal("referenceNumber"));
+                        string freighterName = reader.IsDBNull(reader.GetOrdinal("freighterName")) ? null : reader.GetString(reader.GetOrdinal("freighterName"));
+                        string freighterInvNr = reader.IsDBNull(reader.GetOrdinal("freighterInvNr")) ? null : reader.GetString(reader.GetOrdinal("freighterInvNr"));
+                        DateTime? freightersInvArrived = reader.IsDBNull(reader.GetOrdinal("freighterInvArrived")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterInvArrived"));
+                        DateTime? freighterPaidOn = reader.IsDBNull(reader.GetOrdinal("freighterPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("freighterPaidOn"));
+                        DateTime? customerPaidOn = reader.IsDBNull(reader.GetOrdinal("customerPaidOn")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("customerPaidOn"));
+                        DateTime? shipDate = reader.IsDBNull(reader.GetOrdinal("shipDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("shipDate"));
+                        DateTime? deliveryDate = reader.IsDBNull(reader.GetOrdinal("deliveryDate")) ? null : (DateTime?)reader.GetDateTime(reader.GetOrdinal("deliveryDate"));
+                        List<Address> pickupAddresses = SqlDataAccess.GetPickupAddressesByInvId(invoiceId);
+                        List<Address> deliveryAddresses = SqlDataAccess.GetDeliveryAddressesByInvId(invoiceId);
+                        string product = reader.IsDBNull(reader.GetOrdinal("product")) ? null : reader.GetString(reader.GetOrdinal("product"));
+                        double pricefreighter = reader.IsDBNull(reader.GetOrdinal("priceFreighter")) ? 0 : reader.GetDouble(reader.GetOrdinal("priceFreighter"));
+                        double priceCustomer = reader.IsDBNull(reader.GetOrdinal("priceCustomer")) ? 0 : reader.GetDouble(reader.GetOrdinal("priceCustomer"));
+                        int amount = reader.IsDBNull(reader.GetOrdinal("amount")) ? 0 : reader.GetInt32(reader.GetOrdinal("amount"));
+                        int palletChange = reader.IsDBNull(reader.GetOrdinal("palletChange")) ? 0 : reader.GetInt32(reader.GetOrdinal("palletChange"));
+                        string note = reader.IsDBNull(reader.GetOrdinal("note")) ? null : reader.GetString(reader.GetOrdinal("note"));
+
+                        List<Pallet> allPallets = new List<Pallet>();
+                        if (palletChange == 1)
+                            allPallets = SqlDataAccess.GetPalletsByInvId(invoiceId);
+                        result = new Invoice(invoiceId, orderNr, orderdate, invoiceNr, invoicedate, customer, referenceNr, freighterName, freighterInvNr, freightersInvArrived,
+                            freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses, deliveryAddresses, (palletChange == 1), pricefreighter, priceCustomer, amount, allPallets, note);
+                    }
+                }
+                con.Close();
+            }
+            return result;
+        }
+
         private static int? GetCurrentInvoiceId()
         {
             int? result = -1;
