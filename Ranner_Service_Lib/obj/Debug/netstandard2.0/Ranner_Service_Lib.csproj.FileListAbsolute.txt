@@ -1,9 +1,0 @@
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\bin\Debug\netstandard2.0\Ranner_Service_Lib.deps.json
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\bin\Debug\netstandard2.0\Ranner_Service_Lib.dll
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.csprojAssemblyReference.cache
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.AssemblyInfoInputs.cache
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.AssemblyInfo.cs
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\bin\Debug\netstandard2.0\Ranner_Service_Lib.pdb
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.dll
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.pdb
-C:\Users\judthmar\Documents\GitHub\Ranner-Service-WebAPI\Ranner_Service_Lib\obj\Debug\netstandard2.0\Ranner_Service_Lib.csproj.CoreCompileInputs.cache

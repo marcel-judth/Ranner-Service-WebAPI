@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Ranner_Service.DataAccess
@@ -281,6 +282,8 @@ namespace Ranner_Service.DataAccess
         public static void DeleteInvoice(int invoiceId)
         {
             SqlDataAccess.DeleteDeliverToFromInvoice(invoiceId);
+            SqlDataAccess.DeletePalletsFromInvoice(invoiceId);
+            SqlDataAccess.DeletePickupFromInvoice(invoiceId);
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
