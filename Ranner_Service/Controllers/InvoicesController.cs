@@ -29,7 +29,7 @@ namespace Ranner_Service.Controllers
         // POST api/<controller>
         [HttpPost]
         [ActionName("Complex")]
-        public void Post([FromBody] JObject jsonResult)
+        public int Post([FromBody] JObject jsonResult)
         {
             DateTime? orderDate = (jsonResult["orderDate"] != null) ? (DateTime?)jsonResult["orderDate"] : null;
             DateTime? invoiceDate = (jsonResult["invoiceDate"] != null) ? (DateTime?)jsonResult["invoiceDate"] : null;
@@ -64,14 +64,15 @@ namespace Ranner_Service.Controllers
             double priceFreighter = (double)jsonResult["priceFreighter"];
             double priceCustomer = (double)jsonResult["priceCustomer"];
             int? amount = (int?)jsonResult["amount"];
+            string unit = (string)jsonResult["unit"];
             bool palletChange = (bool)jsonResult["palletChange"];
             string note = (string)jsonResult["note"];
 
             Invoice newInvoice = new Invoice(0, orderDate, -1, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses,
-                deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, note);
+                deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, unit, note);
 
-            SqlDataAccess.InsertInvoice(newInvoice);
+            return SqlDataAccess.InsertInvoice(newInvoice);
         }
 
         // PUT api/<controller>/5
@@ -114,6 +115,8 @@ namespace Ranner_Service.Controllers
             double priceCustomer = (double)jsonResult["priceCustomer"];
             bool palletChange = (bool)jsonResult["palletChange"];
             int? amount = (int?)jsonResult["amount"];
+            string unit = (string)jsonResult["unit"];
+
             string note = (string)jsonResult["note"];
 
             JToken[] jsonPallets = jsonResult["pallets"].ToArray();
@@ -130,7 +133,7 @@ namespace Ranner_Service.Controllers
 
             Invoice invoice = new Invoice(invoiceId, 0, orderDate, invoiceNr, invoiceDate, new Customer(customerId, null, null, null, null, null), referenceNumber,
                 freighterName, freightersInvNumber, freightersInvArrived, freighterPaidOn, customerPaidOn, shipDate, deliveryDate, product, pickupAddresses,
-                deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, pallets, note);
+                deliveryAddresses, palletChange, priceFreighter, priceCustomer, amount, unit, pallets, note);
 
             SqlDataAccess.UpdateInvoice(invoice);
         }
